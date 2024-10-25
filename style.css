@@ -1,0 +1,35 @@
+.katex {
+	font-size: 1.1em;
+}
+
+header {
+	text-align: center;
+	margin: auto;
+	width: 700px;
+	max-width: 100%
+}
+
+body {
+	background-color: #E4E9FF;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 18px;
+}
+
+.header-small {
+	font-size: 16px;
+}
+
+.center {
+	margin: auto;
+	width: 700px;
+	max-width: 100%
+}
+
+p {
+	text-indent: 30px;
+	line-height: 1.5;
+}
+
+.date {
+	font-size: 16px;
+}
