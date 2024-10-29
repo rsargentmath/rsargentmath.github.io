@@ -9,6 +9,7 @@
 		<script src="../../katex/saga_general_2024-10-13.js"></script>
 		
 		<link rel="stylesheet" href="../../style.css">
+		<link rel="stylesheet" href="style.css">
 	</head>
 	
 	<body>
@@ -22,10 +23,61 @@
 		
 		<section class="center">
 			<h1> Introducing the Liquid Earth projection </h1>
-			<div class="date"> 2024 Oct 13 [CHANGE THIS] </div>
-			\[\int_0^1 \frac{\sin x}{\cos x} \,\mathrm{d}x\]
-			<p> Now for some inline math: $f \mapsto [f]_\scr{U}$. Cool! </p>
-			<p> This is a macro: $\dpdpd{y}{t}$. But what if $a < b$ but $\scr{A} \preceq \scr{B}$? Concerning. </p>
+			<div class="date"> 2024 Oct 29 </div>
+
+			<img src="LE_thick_borders_no_watermark.svg" class="image-center" alt="A Liquid Earth map with political borders">
+
+			<p> The Liquid Earth projection is a new, nearly equal-area map projection. It has exceptionally low distortion on landmasses (including islands), while maintaining a mostly north-up orientation and a familiar, symmetrical shape. </p>
+			<p> Liquid Earth is a good choice for general-purpose world maps, including political maps and physical maps. Though it is not exactly equal-area, the area deviations on land are imperceptible to the eye. (The <a href="#stats">Statistics section</a> of this page has the specific measurements of area distortion.) This means it can be used for any application that requires area equivalence, such as dot distribution maps. Liquid Earth represents each country fairly, both in area and shape. </p>
+			<p> Other projections exist that have very low distortion, such as <a href="https://kunimune.blog/2023/12/29/introducing-the-elastic-projections/">Elastic I</a>, <a href="https://en.wikipedia.org/wiki/Dymaxion_map">Dymaxion</a>, and <a href="https://en.wikipedia.org/wiki/Cahill%E2%80%93Keyes_projection">Cahill&ndash;Keyes</a>. However, these projections fail to be north-up and/or have much more interruption than Liquid Earth, which makes them less practical. These projections are also far from being rectangular, which leads to a lot of wasted space when saved as an image or printed. By these standards, the <a href="https://kunimune.blog/2019/11/07/introducing-the-danseiji-projections/">Danseiji III projection</a> does best, but it splits Antarctica and has an irregular shape. All four of these projections are also much farther from being equal-area than Liquid Earth. </p>
+			<p> Liquid Earth achieves low distortion on land by heavily distorting the oceans. Because of this, despite representing the continents accurately, it doesn't accurately portray the relationships <em>between</em> continents. In particular, it distorts latitude and longitude relationships, so it many not be a good choice for maps that relate to longitude or latitude, such as time zone or climate maps. </p>
+			<p> Similar to the <a href="https://kunimune.blog/2023/12/29/introducing-the-elastic-projections/">Elastic projections</a>, Liquid Earth works by starting with a mesh of the globe, then transforming the mesh. However, while the Elastic projections directly place the mesh vertices on the plane, Liquid Earth transforms the mesh on the sphere, then maps the sphere to the plane using a standard pseudocylindrical projection. This is what enables it to maintain a regular outer edge. </p>
+		</section>
+
+		<section class="center">
+			<h3> Formulation </h3>
+			<p>
+				The Liquid Earth projection uses two meshes, the initial mesh and the transformed mesh. The globe is projected onto the initial mesh, then each triangle is mapped to the corresponding triangle on the transformed mesh:
+				<img src="mesh_demo.png" class="image-center" alt="The intial mesh and transformed mesh used for the projection">
+				Finally, the result is mapped to the plane using the <a href="https://en.wikipedia.org/wiki/Equal_Earth_projection">Equal Earth projection</a>. The transformed mesh anticipates the distortion caused by Equal Earth, so that the result has as little distortion of landmasses as possible. The initial mesh is octahedral, with the octahedron's vertices aligned to the coordinate axes. I added extra resolution to the mesh in places that were particularly prone to distortion. The transformed mesh was created through numerical optimization, similar to the Elastic projections. I will describe the optimization process in detail in an upcoming preprint, and will release the source code alongside it.
+			</p>
+			<p>
+				Explicitly, Liquid Earth maps a point from the unit sphere to the plane using the following steps. We take the relationship between spherical and Cartesian coordinates to be
+				\[x = \cos \lm \cos \ph,\;\, y = \sin \lm \cos \ph,\;\, z = \sin \ph\tc\]
+				where $\lm \in [-\pi, \pi]$ is the longitude and $\ph \in [-\pi/2, \pi/2]$ is the latitude. (This implies a right-handed coordinate system.)
+				<ol>
+					<li> Rotate the point $11$ degrees clockwise about the $+z$ axis. This rotation places the 169th meridian west, which passes through the Bering Strait, on the $xz$ plane. </li>
+					<li> Project the point radially onto the initial mesh. That is, scale the vector down slightly so that it lies on some triangle $T$ of the initial mesh. </li>
+					<li> Map the point from $T$ to the corresponding triangle $T\prm$ of the transformed mesh. We map the point using the unique affine function that takes the vertices of $T$ to the corresponding vertices of $T\prm$. </li>
+					<li> Project the point radially back onto the unit sphere (i.e., normalize it). </li>
+					<li> Project the point to the plane using Equal Earth. The Equal Earth projection is given by
+						\[x = \frac{2 \lm \cos \th}{\sqrt{3}\,(a_1 + 3a_2\,\th^2 + 7a_3\,\th^6 + 9a_4\,\th^8)}\]
+						\[y = a_1\,\th + a_2\,\th^3 + a_3\,\th^7 + a_4\,\th^9\]
+						\[\th = \sin^{-1}\Bigrou{\frac{\sqrt{3}}{2}\sin\ph}\]
+						\[a_1 = 1.340264,\: a_2 = -0.081106,\: a_3 = 0.000893,\: a_4 = 0.003796\tc\]
+						where $\lm$ and $\ph$ are longitude and latitude respectively and $(x,y)$ is the projected point. </li>
+				</ol>
+			</p>
+			<p> When implementing the projection in code, step 2 requires finding which triangle $T$ the point lands on. It's usually too expensive to loop through all mesh triangles for each point you project, so it's better to create a dictionary that takes in a point (rounded so the dictionary has a manageable number of keys) and returns a small list of triangles to check. </p>
+		</section>
+
+		<section class="center">
+			<h3> How to use Liquid Earth </h3>
+			<p> The Liquid Earth mesh files (in csv and npy format), along with svg and png templates for the map, are released <a href="https://github.com/rsargentmath/liquid-earth-projection">here</a>. These files are all in the public domain, though credit is appreciated. The easiest way to create a Liquid Earth map is to edit one of the svg templates. Each country is a path, so by using an svg editor such as <a href="https://inkscape.org/">Inkscape</a>, it's easy to add a custom color to each country to create a choropleth map. There is a choice of 5&deg;, 10&deg;, 15&deg;, and 30&deg; graticules. </p>
+			<p> To create a Liquid Earth map from custom vector or raster data, <a href="https://github.com/jkunimune/Map-Projections">Justin Kunimune's map projection software</a> will soon have the projection as an option. If anyone reading this wants to implement it in another program, and would like help doing so, please contact me! </p>
+		</section>
+
+		<section class="center" id="stats">
+			<h3> Statistics </h3>
+			<p> Exact area equivalence is not achievable with a mesh-based method, so Liquid Earth is only approximately equal-area. The table below quantifies the area error of the projection. Since the Equal Earth projection is equal-area, we just need to look at the relative error between the area of each triangle $T$ of the initial mesh and its counterpart $T\prm$ on the transformed mesh. This error is $\lrver{\dfrac{\operatorname{area}(T\prm)}{\operatorname{area}(T)} - 1}$, where we compute the areas of $T$ and $T\prm$ as spherical triangles. This doesn't address deviation from area equivalence <em>within</em> mesh triangles, but this is negligible because of the triangles' small size. The means and percentiles below are weighted by $\operatorname{area}(T)$ for each $T$. The "land" row refers to triangles that contain any amount of land (that shows up on <a href="https://www.naturalearthdata.com/downloads/50m-cultural-vectors/">the dataset I used</a>), while the "water" row refers to triangles that are entirely water. </p>
+			\[ \begin{array}{c|c c c c c c}
+			\text{error} & \text{mean} & \text{50th \%ile} & \text{90th \%ile} & \text{99th \%ile} & \text{max} \\
+			\hline
+			\text{land} & 0.45\% & 0.30\% & 1.01\% & 2.55\% & 10.55\% \\
+			\text{water} & 5.65\% & 3.15\% & 10.89\% & 40.46\% & 538.48\% \\
+			\text{all} & 3.68\% & 1.30\% & 8.13\% & 31.86\% & 538.48\%
+			\end{array} \]
+			<p> The interruption length of Liquid Earth is approximately $3.057$, taking an irregular path from $90^\circ\mathrm{N}$ to $69.47^\circ\mathrm{S}\: 143.40^\circ\mathrm{W}$. This is actually less interruption than that of pseudocylindrical projections (such as Equal Earth), which have an interruption length of $\pi$. </p>
 		</section>
 	</body>
 </html>
