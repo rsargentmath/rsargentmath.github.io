@@ -42,7 +42,7 @@
 				Finally, the result is mapped to the plane using the <a href="https://en.wikipedia.org/wiki/Equal_Earth_projection">Equal Earth projection</a>. The transformed mesh anticipates the distortion caused by Equal Earth, so that the result has as little distortion of landmasses as possible. The initial mesh is octahedral, with the octahedron's vertices aligned to the coordinate axes. I added extra resolution to the mesh in places that were particularly prone to distortion. The transformed mesh was created through numerical optimization, similar to the Elastic projections. I will describe the optimization process in detail in an upcoming preprint, and will release the source code alongside it.
 			</p>
 			<p>
-				Explicitly, Liquid Earth maps a point from the unit sphere to the plane using the following steps. We take the relationship between spherical and Cartesian coordinates to be
+				Explicitly, Liquid Earth maps a point from the unit sphere to the plan<b>e</b> using the following steps. We take the relationship between spherical and Cartesian coordinates to be
 				\[x = \cos \lm \cos \ph,\;\, y = \sin \lm \cos \ph,\;\, z = \sin \ph\tc\]
 				where $\lm \in [-\pi, \pi]$ is the longitude and $\ph \in [-\pi/2, \pi/2]$ is the latitude. (This implies a right-handed coordinate system.)
 				<ol>
