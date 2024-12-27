@@ -84,5 +84,22 @@
 			\end{array} \]
 			<p> The interruption length of Liquid Earth is approximately $3.057$, taking an irregular path from $90^\circ\mathrm{N}$ to $69.47^\circ\mathrm{S}\: 143.40^\circ\mathrm{W}$. This is actually less interruption than that of pseudocylindrical projections (such as Equal Earth), which have an interruption length of $\pi$. </p>
 		</section>
+		
+		<header>
+			<hr>
+		</header>
+		
+		<section class="center">
+			<div class="date"> <i>Update 2024 Dec 27</i> </div>
+			<h3> The Solid Earth projection </h3>
+			<img src="SE_no_watermark.svg" class="image-center-small" alt="A Solid Earth map with political borders">
+			<p> Using similar techniques, I have now created the Solid Earth projection. Similar to Danseiji V and Elastic III, this map shows land at a larger scale while compressing the oceans. Compared to Elastic III, Solid Earth is more north-up and fits the Earth's land into a rectangle more efficiently. This projection is a good choice for maps where space is at a premium and the only relevant information is on land. Though this map is obviously not equal-area, the area scale is fairly consistent across non-Antarctica land. </p>
+			<p> The formulation is the same as for Liquid Earth, except the meshes are different and the final projection is different. The mesh files are available <a href="https://github.com/rsargentmath/liquid-earth-projection">here</a>. The final projection is given by
+				\[x = \frac{\lm \cos \ph}{f\prm(\ph)}\]
+				\[y = f(\ph)\]
+				\[f(\ph) = 0.3\,g(\ph) + 0.7\cdot 1.4 \sin(\ph)\tc\]
+				where $g(\ph)$ is the $y$-coordinate of the Equal Earth projection at latitude $\ph$.
+			</p>
+		</section>
 	</body>
 </html>

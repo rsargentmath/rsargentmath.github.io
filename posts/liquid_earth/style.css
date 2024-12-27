@@ -1,9 +1,17 @@
 .image-center {
 	margin: auto;
-	margin-top: 20px;
-	margin-bottom: 20px;
+	margin-top: 15px;
+	margin-bottom: 5px;
 	width: 950px;
 	transform: translateX(-125px);
+}
+
+.image-center-small {
+	margin: auto;
+	margin-top: 10px;
+	margin-bottom: 0px;
+	width: 800px;
+	transform: translateX(-50px);
 }
 
 li {
